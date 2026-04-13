@@ -42,6 +42,11 @@ export const PostDetailPage = ({ user }: any) => {
 
   useEffect(() => {
     loadData();
+    const viewKey = `view_${id}`;
+    if (!sessionStorage.getItem(viewKey)) {
+      api.post(`/posts/${id}/view`).catch(console.error);
+      sessionStorage.setItem(viewKey, "true");
+    }
   }, [id]);
 
   const handleDelete = async () => {

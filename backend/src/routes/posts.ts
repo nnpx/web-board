@@ -86,9 +86,6 @@ router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Increment views
-    await db.update(posts).set({ viewsCount: sql`${posts.viewsCount} + 1` }).where(eq(posts.id, id));
-
     const post = await db.select({
       id: posts.id,
       title: posts.title,
@@ -108,6 +105,16 @@ router.get("/:id", async (req, res) => {
     if (post.length === 0) return res.status(404).json({ error: "Post not found" });
 
     res.json(post[0]);
+  } catch (err) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/:id/view", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await db.update(posts).set({ viewsCount: sql`${posts.viewsCount} + 1` }).where(eq(posts.id, id));
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: "Internal server error" });
   }
