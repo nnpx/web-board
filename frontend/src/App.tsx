@@ -63,9 +63,15 @@ const Sidebar = ({ user, setUser, isOpen, setIsOpen }: any) => {
                   key={room.id}
                   to={`/?roomId=${room.id}`}
                   onClick={() => setIsOpen(false)}
-                  className={`flex items-center gap-2 px-3 py-2 font-medium rounded-md transition-colors ${isActive ? 'bg-teal-50 text-teal-700' : 'text-slate-600 hover:bg-slate-100'}`}
+                  className={`group relative flex items-center gap-2 px-3 py-2 font-medium rounded-md transition-colors ${isActive ? 'bg-teal-50 text-teal-700' : 'text-slate-600 hover:bg-slate-100'}`}
                 >
                   <span className={isActive ? "text-teal-600" : "text-slate-500"}>{getRoomIcon(room.name)}</span> {room.name}
+                  {room.description && (
+                    <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-2 bg-slate-900 text-white text-xs font-medium rounded-md shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 w-max max-w-xs md:block hidden leading-tight">
+                      <div className="absolute top-1/2 -translate-y-1/2 right-full border-[5px] border-transparent border-r-slate-900"></div>
+                      {room.description}
+                    </div>
+                  )}
                 </Link>
               );
             })}
