@@ -31,7 +31,7 @@ router.post("/", authenticateToken, async (req: Request, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { roomId, search } = req.query;
+    const { roomId, search, sort = "latest" } = req.query;
     let conditions = [];
 
     if (roomId) {
@@ -48,8 +48,10 @@ router.get("/", async (req, res) => {
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-    const allPosts = await db.select({
+    let orderByLogic = desc(posts.createdAt);
+    if (sort === "popular") orderByLogic = desc(posts.viewsCount);
+    
+    let query = db.select({
       id: posts.id,
       title: posts.title,
       content: posts.content,
@@ -58,14 +60,22 @@ router.get("/", async (req, res) => {
       roomId: posts.roomId,
       userId: posts.userId,
       username: users.username,
-      roomName: rooms.name
+      roomName: rooms.name,
+      repliesCount: sql<number>`count(${replies.id})`.mapWith(Number)
     })
       .from(posts)
       .leftJoin(users, eq(posts.userId, users.id))
       .leftJoin(rooms, eq(posts.roomId, rooms.id))
+      .leftJoin(replies, eq(posts.id, replies.postId))
       .where(whereClause)
-      .orderBy(desc(posts.createdAt));
+      .groupBy(posts.id, users.username, rooms.name)
+      .orderBy(orderByLogic);
 
+    if (sort === "unanswered") {
+      query = query.having(eq(sql`count(${replies.id})`, 0)) as any;
+    }
+
+    const allPosts = await query;
     res.json(allPosts);
   } catch (err) {
     res.status(500).json({ error: "Internal server error" });

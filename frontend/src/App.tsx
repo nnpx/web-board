@@ -117,12 +117,13 @@ const TopHeader = ({ setSidebarOpen, user }: any) => {
 
   return (
     <>
-      <header className="sticky top-0 z-20 w-full bg-white/80 backdrop-blur-md border-b border-slate-200 p-4 flex justify-between items-center px-4 md:px-8 shadow-sm">
-        <div className="flex items-center flex-1 max-w-lg gap-4">
-          <Button variant="ghost" size="icon" className="md:hidden shrink-0" onClick={() => setSidebarOpen((prev: boolean) => !prev)}>
-            <Menu className="w-5 h-5" />
-          </Button>
-          {location.pathname !== '/create' && (
+      {location.pathname == '/' && (
+        <header className="sticky top-0 z-20 w-full bg-white/80 backdrop-blur-md border-b border-slate-200 p-4 flex justify-between items-center px-4 md:px-8 shadow-sm">
+          <div className="flex items-center flex-1 max-w-lg gap-4">
+            <Button variant="ghost" size="icon" className="md:hidden shrink-0" onClick={() => setSidebarOpen((prev: boolean) => !prev)}>
+              <Menu className="w-5 h-5" />
+            </Button>
+
             <form onSubmit={handleSearch} className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
@@ -132,14 +133,15 @@ const TopHeader = ({ setSidebarOpen, user }: any) => {
                 className="pl-9 bg-slate-50 border-slate-200 focus-visible:ring-teal-500 w-full"
               />
             </form>
-          )}
-        </div>
-        <div className="ml-4 shrink-0">
-          <Button onClick={handleCreatePostClick} className="bg-teal-600 hover:bg-teal-700 text-white rounded-lg shadow-sm font-medium px-4 md:px-5 flex items-center gap-2">
-            <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Create Post</span>
-          </Button>
-        </div>
-      </header>
+
+          </div>
+          <div className="ml-4 shrink-0">
+            <Button onClick={handleCreatePostClick} className="bg-teal-600 hover:bg-teal-700 text-white rounded-lg shadow-sm font-medium px-4 md:px-5 flex items-center gap-2">
+              <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Create Post</span>
+            </Button>
+          </div>
+        </header>
+      )}
 
       <Dialog open={authDialogOpen} onOpenChange={setAuthDialogOpen}>
         <DialogContent className="sm:max-w-md">

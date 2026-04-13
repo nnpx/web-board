@@ -3,6 +3,7 @@ import { api } from "../lib/axios";
 import { Card, CardContent } from "../components/ui/card";
 import { Link, useSearchParams } from "react-router-dom";
 import { Cpu, Trophy, Popcorn, BookOpen, MessageSquare } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "../components/ui/tabs";
 
 export const getRoomColor = (roomName: string) => {
   switch (roomName) {
@@ -19,23 +20,33 @@ export const FeedPage = () => {
   const [searchParams] = useSearchParams();
   const roomId = searchParams.get("roomId");
   const search = searchParams.get("search");
+  const [sort, setSort] = useState("latest");
 
   useEffect(() => {
     let url = "/posts";
     const params = new URLSearchParams();
     if (roomId) params.append("roomId", roomId);
     if (search) params.append("search", search);
+    params.append("sort", sort);
     if (params.toString()) url += `?${params.toString()}`;
 
     api.get(url).then(res => setPosts(res.data)).catch(console.error);
-  }, [roomId, search]);
+  }, [roomId, search, sort]);
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-6">
-      <div className="mb-8">
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
           {search ? `Search results for "${search}"` : "Main Feed"}
         </h2>
+        
+        <Tabs value={sort} onValueChange={setSort} className="w-full md:w-auto">
+          <TabsList className="w-full md:w-auto justify-start md:justify-center">
+            <TabsTrigger value="latest" className="flex-1 md:flex-auto">Latest</TabsTrigger>
+            <TabsTrigger value="popular" className="flex-1 md:flex-auto">Popular</TabsTrigger>
+            <TabsTrigger value="unanswered" className="flex-1 md:flex-auto">Unanswered</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
       {posts.length === 0 ? (
@@ -63,7 +74,10 @@ export const FeedPage = () => {
                     <p className="text-slate-600 mb-4 line-clamp-2 leading-relaxed">{snippet}...</p>
                     <div className="flex justify-between text-slate-500 text-sm font-medium">
                       <span>Posted by {post.username}</span>
-                      <span>{post.viewsCount} views</span>
+                      <div className="flex gap-4">
+                        <span>{post.repliesCount || 0} Replies</span>
+                        <span>{post.viewsCount} views</span>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

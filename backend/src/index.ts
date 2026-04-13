@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth";
 import roomRoutes from "./routes/rooms";
 import postRoutes from "./routes/posts";
+import repliesRoutes from "./routes/replies";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/rooms", roomRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/replies", repliesRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });

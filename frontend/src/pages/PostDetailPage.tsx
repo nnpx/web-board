@@ -6,6 +6,16 @@ import { Textarea } from "../components/ui/textarea";
 import { getRoomColor } from "./FeedPage";
 import { User, UserCircle2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../components/ui/alert-dialog";
 
 export const PostDetailPage = ({ user }: any) => {
   const { id } = useParams();
@@ -17,6 +27,7 @@ export const PostDetailPage = ({ user }: any) => {
   const [inlineReplyContent, setInlineReplyContent] = useState("");
   const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
   const [editReplyContent, setEditReplyContent] = useState("");
+  const [replyToDelete, setReplyToDelete] = useState<string | null>(null);
 
   const loadData = async () => {
     try {
@@ -54,23 +65,20 @@ export const PostDetailPage = ({ user }: any) => {
     }
   };
 
-  const handleInlineReplyOpen = (reply: any, isChild: boolean) => {
+  const handleInlineReplyOpen = (reply: any) => {
     if (!user) {
       navigate('/auth');
       return;
     }
     setActiveReplyId(reply.id);
-    if (isChild) {
-      setInlineReplyContent(`@${reply.username} `);
-    } else {
-      setInlineReplyContent("");
-    }
+    setInlineReplyContent(`@${reply.username} `);
   };
 
   const handleSubmitInlineReply = async (topParentId: string) => {
     if (!inlineReplyContent) return;
     try {
-      await api.post(`/posts/${id}/replies`, { content: inlineReplyContent, parentId: topParentId });
+      const finalContent = inlineReplyContent.replace(/^@(\S+)\s*/, "<strong>@$1</strong> ");
+      await api.post(`/posts/${id}/replies`, { content: finalContent, parentId: topParentId });
       setInlineReplyContent("");
       setActiveReplyId(null);
       toast.success("Successfully created reply.");
@@ -100,14 +108,16 @@ export const PostDetailPage = ({ user }: any) => {
     }
   };
 
-  const handleReplyDelete = async (replyId: string) => {
-    if (!window.confirm("Delete this reply?")) return;
+  const handleReplyDelete = async () => {
+    if (!replyToDelete) return;
     try {
-      await api.delete(`/replies/${replyId}`);
+      await api.delete(`/replies/${replyToDelete}`);
       toast.success("Successfully deleted reply.");
+      setReplyToDelete(null);
       loadData();
-    } catch (err) {
-      toast.error("Failed to delete reply.");
+    } catch (err: any) {
+      console.error(err.response || err);
+      toast.error(err.response?.data?.error || "Failed to delete reply.");
     }
   };
 
@@ -116,15 +126,7 @@ export const PostDetailPage = ({ user }: any) => {
   const roomTheme = getRoomColor(post.roomName);
   const topLevelReplies = replies.filter(r => !r.parentId);
 
-  const ReplyEditorUI = ({ topParentId }: { topParentId: string }) => (
-    <div className="mt-4 bg-slate-50 p-4 border border-slate-200 rounded-lg">
-      <Textarea value={inlineReplyContent} onChange={(e) => setInlineReplyContent(e.target.value)} placeholder="Type your reply..." className="bg-white" />
-      <div className="flex justify-end mt-3 space-x-3">
-        <Button variant="ghost" onClick={() => { setActiveReplyId(null); setInlineReplyContent(''); }}>Cancel</Button>
-        <Button onClick={() => handleSubmitInlineReply(topParentId)} className="bg-teal-600 hover:bg-teal-700 text-white">Post Reply</Button>
-      </div>
-    </div>
-  );
+
 
   return (
     <div className="p-8 max-w-4xl mx-auto space-y-8">
@@ -187,7 +189,7 @@ export const PostDetailPage = ({ user }: any) => {
                             <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-teal-600" onClick={() => handleEditStart(topReply)}>
                               <Pencil className="w-4 h-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-red-600" onClick={() => handleReplyDelete(topReply.id)}>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-red-600" onClick={() => setReplyToDelete(topReply.id)}>
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
@@ -208,11 +210,17 @@ export const PostDetailPage = ({ user }: any) => {
 
                       {editingReplyId !== topReply.id && (
                         <div className="mt-2">
-                          <button onClick={() => handleInlineReplyOpen(topReply, false)} className="text-sm text-slate-400 hover:text-slate-600 font-semibold transition-colors">Reply</button>
+                          <button onClick={() => handleInlineReplyOpen(topReply)} className="text-sm text-slate-400 hover:text-slate-600 font-semibold transition-colors">Reply</button>
                         </div>
                       )}
                       {activeReplyId === topReply.id && (
-                        <ReplyEditorUI topParentId={topReply.id} />
+                        <div className="mt-4 bg-slate-50 p-4 border border-slate-200 rounded-lg">
+                          <Textarea value={inlineReplyContent} onChange={(e) => setInlineReplyContent(e.target.value)} placeholder="Type your reply..." className="bg-white" />
+                          <div className="flex justify-end mt-3 space-x-3">
+                            <Button variant="ghost" onClick={() => { setActiveReplyId(null); setInlineReplyContent(''); }}>Cancel</Button>
+                            <Button onClick={() => handleSubmitInlineReply(topReply.id)} className="bg-teal-600 hover:bg-teal-700 text-white">Post Reply</Button>
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -236,7 +244,7 @@ export const PostDetailPage = ({ user }: any) => {
                                   <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-400 hover:text-teal-600" onClick={() => handleEditStart(child)}>
                                     <Pencil className="w-3.5 h-3.5" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-400 hover:text-red-600" onClick={() => handleReplyDelete(child.id)}>
+                                  <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-400 hover:text-red-600" onClick={() => setReplyToDelete(child.id)}>
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </Button>
                                 </div>
@@ -257,11 +265,17 @@ export const PostDetailPage = ({ user }: any) => {
 
                             {editingReplyId !== child.id && (
                               <div className="mt-2">
-                                <button onClick={() => handleInlineReplyOpen(child, true)} className="text-sm text-slate-400 hover:text-slate-600 font-semibold transition-colors">Reply</button>
+                                <button onClick={() => handleInlineReplyOpen(child)} className="text-sm text-slate-400 hover:text-slate-600 font-semibold transition-colors">Reply</button>
                               </div>
                             )}
                             {activeReplyId === child.id && (
-                              <ReplyEditorUI topParentId={topReply.id} />
+                              <div className="mt-4 bg-slate-50 p-4 border border-slate-200 rounded-lg">
+                                <Textarea value={inlineReplyContent} onChange={(e) => setInlineReplyContent(e.target.value)} placeholder="Type your reply..." className="bg-white" />
+                                <div className="flex justify-end mt-3 space-x-3">
+                                  <Button variant="ghost" onClick={() => { setActiveReplyId(null); setInlineReplyContent(''); }}>Cancel</Button>
+                                  <Button onClick={() => handleSubmitInlineReply(topReply.id)} className="bg-teal-600 hover:bg-teal-700 text-white">Post Reply</Button>
+                                </div>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -295,6 +309,21 @@ export const PostDetailPage = ({ user }: any) => {
           )}
         </div>
       </div>
+
+      <AlertDialog open={!!replyToDelete} onOpenChange={(open) => !open && setReplyToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this reply?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleReplyDelete} className="bg-red-600 hover:bg-red-700 focus:ring-red-600 text-white">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

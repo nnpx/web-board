@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { api } from "../lib/axios";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -8,13 +8,18 @@ import ReactQuill from "react-quill-new";
 import "quill/dist/quill.snow.css";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "../components/ui/dialog";
 
 export const CreatePostPage = ({ user }: any) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const quillRef = useRef<any>(null);
   const [roomId, setRoomId] = useState("1");
   const [rooms, setRooms] = useState<any[]>([]);
   const navigate = useNavigate();
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [imageUrlInput, setImageUrlInput] = useState("");
+  const [imageInsertionIndex, setImageInsertionIndex] = useState(0);
 
   useEffect(() => {
     api.get("/rooms").then(res => {
@@ -41,13 +46,37 @@ export const CreatePostPage = ({ user }: any) => {
     }
   };
 
-  const modules = {
-    toolbar: [
-      ['bold', 'italic'],
-      [{ 'list': 'bullet' }],
-      ['image']
-    ],
+  const imageHandler = () => {
+    if (quillRef.current) {
+      const quill = quillRef.current.getEditor();
+      const range = quill.getSelection();
+      setImageInsertionIndex(range ? range.index : quill.getLength() || 0);
+    }
+    setImageUrlInput("");
+    setIsImageModalOpen(true);
   };
+
+  const handleImageSubmit = () => {
+    if (imageUrlInput && quillRef.current) {
+      const quill = quillRef.current.getEditor();
+      quill.insertEmbed(imageInsertionIndex, 'image', imageUrlInput);
+      setTimeout(() => quill.setSelection(imageInsertionIndex + 1), 0);
+    }
+    setIsImageModalOpen(false);
+  };
+
+  const modules = useMemo(() => ({
+    toolbar: {
+      container: [
+        ['bold', 'italic'],
+        [{ 'list': 'bullet' }],
+        ['image']
+      ],
+      handlers: {
+        image: imageHandler
+      }
+    }
+  }), []);
 
   return (
     <div className="p-8 max-w-4xl mx-auto py-10">
@@ -81,7 +110,7 @@ export const CreatePostPage = ({ user }: any) => {
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Content</label>
               {/* @ts-ignore */}
-              <ReactQuill theme="snow" value={content} onChange={setContent} modules={modules} className="bg-white" />
+              <ReactQuill theme="snow" value={content} onChange={setContent} modules={modules} className="bg-white" ref={quillRef} />
             </div>
             <div className="pt-4 flex justify-end">
               <Button type="submit" size="lg" className="bg-teal-600 hover:bg-teal-700 text-white rounded-lg px-8">Submit Post</Button>
@@ -89,6 +118,33 @@ export const CreatePostPage = ({ user }: any) => {
           </form>
         </CardContent>
       </Card>
+
+      <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Insert Image URL</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              value={imageUrlInput}
+              onChange={(e) => setImageUrlInput(e.target.value)}
+              placeholder="https://example.com/beautiful-sunset.jpg"
+              className="w-full focus-visible:ring-teal-500"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleImageSubmit();
+                }
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsImageModalOpen(false)}>Cancel</Button>
+            <Button className="bg-teal-600 hover:bg-teal-700 text-white" onClick={handleImageSubmit}>Insert Image</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
