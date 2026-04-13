@@ -10,9 +10,17 @@ import { PostDetailPage } from "./pages/PostDetailPage";
 import { Input } from "./components/ui/input";
 import { Toaster, toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "./components/ui/dialog";
+import type { User, Room } from "./types";
 
-const Sidebar = ({ user, setUser, isOpen, setIsOpen }: any) => {
-  const [rooms, setRooms] = useState<any[]>([]);
+interface SidebarProps {
+  user: User | null;
+  setUser: (u: User | null) => void;
+  isOpen: boolean;
+  setIsOpen: (o: boolean) => void;
+}
+
+const Sidebar = ({ user, setUser, isOpen, setIsOpen }: SidebarProps) => {
+  const [rooms, setRooms] = useState<Room[]>([]);
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const currentRoomId = searchParams.get("roomId");
@@ -98,13 +106,13 @@ const Sidebar = ({ user, setUser, isOpen, setIsOpen }: any) => {
   );
 };
 
-const TopHeader = ({ setSidebarOpen, user }: any) => {
+const TopHeader = ({ setSidebarOpen, user }: { setSidebarOpen: any, user: User | null }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleSearch = (e: any) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
       navigate(`/?search=${encodeURIComponent(searchTerm)}`);
@@ -172,7 +180,7 @@ const TopHeader = ({ setSidebarOpen, user }: any) => {
 }
 
 function AppContent() {
-  const [user, setUser] = useState<{ id: string | number, username: string } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 

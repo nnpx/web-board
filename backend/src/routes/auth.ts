@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { db } from "../db";
@@ -8,7 +8,7 @@ import { eq } from "drizzle-orm";
 
 const router = Router();
 
-router.post("/signup", async (req, res) => {
+router.post("/signup", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ error: "Username and password required" });
@@ -29,11 +29,11 @@ router.post("/signup", async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000
     }).json({ message: "Sign up successful" });
   } catch (err) {
-    res.status(500).json({ error: "Internal server error" });
+    next(err);
   }
 });
 
-router.post("/login", async (req, res) => {
+router.post("/login", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { username, password } = req.body;
     const user = await db.select().from(users).where(eq(users.username, username));
@@ -51,11 +51,11 @@ router.post("/login", async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000
     }).json({ message: "Login successful" });
   } catch (err) {
-    res.status(500).json({ error: "Internal server error" });
+    next(err);
   }
 });
 
-router.post("/logout", (req, res) => {
+router.post("/logout", (req: Request, res: Response) => {
   res.clearCookie('token', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -63,15 +63,13 @@ router.post("/logout", (req, res) => {
   }).json({ message: "Logout successful" });
 });
 
-import { Request } from "express";
-
-router.get("/me", authenticateToken, async (req: Request, res) => {
+router.get("/me", authenticateToken, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = await db.select({ id: users.id, username: users.username, createdAt: users.createdAt }).from(users).where(eq(users.id, (req as AuthRequest).user!.userId));
     if (user.length === 0) return res.status(404).json({ error: "User not found" });
     res.json(user[0]);
   } catch (err) {
-    res.status(500).json({ error: "Internal server error" });
+    next(err);
   }
 });
 

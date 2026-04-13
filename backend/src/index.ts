@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth";
 import roomRoutes from "./routes/rooms";
 import postRoutes from "./routes/posts";
 import repliesRoutes from "./routes/replies";
+import { errorHandler } from "./middleware/errorHandler";
 
 dotenv.config();
 
@@ -29,6 +30,8 @@ app.use("/api/replies", repliesRoutes);
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
+
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

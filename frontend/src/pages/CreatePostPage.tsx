@@ -9,13 +9,14 @@ import "quill/dist/quill.snow.css";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "../components/ui/dialog";
+import type { User, Room } from "../types";
 
-export const CreatePostPage = ({ user }: any) => {
+export const CreatePostPage = ({ user }: { user: User | null }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const quillRef = useRef<any>(null);
   const [roomId, setRoomId] = useState("1");
-  const [rooms, setRooms] = useState<any[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
   const navigate = useNavigate();
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [imageUrlInput, setImageUrlInput] = useState("");
@@ -34,7 +35,7 @@ export const CreatePostPage = ({ user }: any) => {
     return <div className="p-8 text-center text-slate-500 font-medium">Please log in to create a post.</div>;
   }
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await api.post("/posts", { title, content, roomId });

@@ -4,6 +4,7 @@ import { Card, CardContent } from "../components/ui/card";
 import { Link, useSearchParams } from "react-router-dom";
 import { Cpu, Trophy, Popcorn, BookOpen, MessageSquare } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "../components/ui/tabs";
+import type { Post } from "../types";
 
 export const getRoomColor = (roomName: string) => {
   switch (roomName) {
@@ -16,7 +17,7 @@ export const getRoomColor = (roomName: string) => {
 };
 
 export const FeedPage = () => {
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [searchParams] = useSearchParams();
   const roomId = searchParams.get("roomId");
   const search = searchParams.get("search");

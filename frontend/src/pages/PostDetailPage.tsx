@@ -16,12 +16,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../components/ui/alert-dialog";
+import type { Post, Reply, User as UserType } from "../types";
 
-export const PostDetailPage = ({ user }: any) => {
+export const PostDetailPage = ({ user }: { user: UserType | null }) => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [post, setPost] = useState<any>(null);
-  const [replies, setReplies] = useState<any[]>([]);
+  const [post, setPost] = useState<Post | null>(null);
+  const [replies, setReplies] = useState<Reply[]>([]);
   const [replyContent, setReplyContent] = useState("");
   const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
   const [inlineReplyContent, setInlineReplyContent] = useState("");
