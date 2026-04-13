@@ -31,6 +31,7 @@ A modern, full-stack discussion forum application designed with a modern UI, rob
 - **PostgreSQL**
 - **Bcrypt & JSONWebToken** (Authentication)
 - **Cors & Cookie Parser**
+- **Zod** (Validation)
 
 ## API Routes
 

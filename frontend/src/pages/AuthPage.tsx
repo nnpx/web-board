@@ -9,6 +9,7 @@ export const AuthPage = ({ setUser }: any) => {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -17,7 +18,8 @@ export const AuthPage = ({ setUser }: any) => {
     setError("");
     try {
       const endpoint = isLogin ? "/auth/login" : "/auth/signup";
-      await api.post(endpoint, { username, password });
+      const payload = isLogin ? { username, password } : { username, password, confirmPassword };
+      await api.post(endpoint, payload);
 
       const res = await api.get("/auth/me");
       setUser(res.data);
@@ -54,6 +56,17 @@ export const AuthPage = ({ setUser }: any) => {
                 required
               />
             </div>
+            {!isLogin && (
+              <div>
+                <Input
+                  type="password"
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+            )}
             {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
             <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700 text-white rounded-lg shadow-sm py-2.5">
               {isLogin ? "Log In" : "Sign Up"}
