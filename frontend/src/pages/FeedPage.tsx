@@ -67,13 +67,11 @@ export const FeedPage = () => {
           {[...Array(5)].map((_, i) => (
             <Card key={i} className="bg-white border-0 shadow-sm rounded-xl">
               <CardContent className="p-6">
-                <div className="flex justify-between items-start mb-3">
+                <div className="flex justify-between items-start">
                   <Skeleton className="h-6 w-2/3" />
                   <Skeleton className="h-6 w-24 rounded-md" />
                 </div>
-                <Skeleton className="h-4 w-full mb-2" />
-                <Skeleton className="h-4 w-5/6 mb-4" />
-                <div className="flex justify-between items-center mt-4">
+                <div className="flex justify-between items-center mt-6">
                   <Skeleton className="h-4 w-32" />
                   <div className="flex gap-4">
                     <Skeleton className="h-4 w-16" />
@@ -91,24 +89,24 @@ export const FeedPage = () => {
       ) : (
         <div className="space-y-4">
           {posts.map(post => {
-            const doc = new DOMParser().parseFromString(post.content, 'text/html');
-            const plainText = doc.body.textContent || "";
-            const snippet = plainText.substring(0, 150);
             const { color, icon } = getRoomColor(post.roomName);
 
             return (
               <Link to={`/posts/${post.id}`} key={post.id} className="block group">
                 <Card className="bg-white border-0 shadow-sm rounded-xl hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
                   <CardContent className="p-6">
-                    <div className="flex justify-between items-start mb-3">
+                    <div className="flex justify-between items-start mb-6">
                       <h3 className="text-xl font-bold text-slate-900 group-hover:text-teal-700 transition-colors tracking-tight">{post.title}</h3>
                       <span className={`px-2.5 py-1 rounded-md text-xs font-semibold shrink-0 whitespace-nowrap ${color}`}>
                         {icon}{post.roomName}
                       </span>
                     </div>
-                    <p className="text-slate-600 mb-4 line-clamp-2 leading-relaxed">{snippet}...</p>
                     <div className="flex justify-between text-slate-500 text-sm font-medium">
-                      <span>Posted by {post.username}</span>
+                      <div className="flex items-center gap-2">
+                        <span>Posted by {post.username}</span>
+                        <span className="text-slate-300">•</span>
+                        <span>{new Date(post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      </div>
                       <div className="flex gap-4">
                         <span>{post.repliesCount || 0} Replies</span>
                         <span>{post.viewsCount} views</span>
