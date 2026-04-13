@@ -18,6 +18,8 @@ import {
 } from "../components/ui/alert-dialog";
 import type { Post, Reply, User as UserType } from "../types";
 
+import { Skeleton } from "../components/ui/skeleton";
+
 export const PostDetailPage = ({ user }: { user: UserType | null }) => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -127,7 +129,31 @@ export const PostDetailPage = ({ user }: { user: UserType | null }) => {
     }
   };
 
-  if (!post) return <div className="p-8 text-center text-slate-500">Loading...</div>;
+  if (!post) {
+    return (
+      <div className="p-8 max-w-4xl mx-auto space-y-8">
+        <div className="bg-white rounded-xl shadow-sm border-0 overflow-hidden p-8">
+          <div className="flex justify-between items-start mb-6">
+            <Skeleton className="h-10 w-2/3" />
+            <Skeleton className="h-8 w-24 rounded-md" />
+          </div>
+          <div className="flex items-center space-x-4 mb-8 pb-6 border-b border-slate-100">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-20" />
+          </div>
+          <div className="space-y-4">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-4/5" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const roomTheme = getRoomColor(post.roomName);
   const topLevelReplies = replies.filter(r => !r.parentId);

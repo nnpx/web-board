@@ -16,14 +16,18 @@ export const getRoomColor = (roomName: string) => {
   }
 };
 
+import { Skeleton } from "../components/ui/skeleton";
+
 export const FeedPage = () => {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchParams] = useSearchParams();
   const roomId = searchParams.get("roomId");
   const search = searchParams.get("search");
   const [sort, setSort] = useState("latest");
 
   useEffect(() => {
+    setIsLoading(true);
     let url = "/posts";
     const params = new URLSearchParams();
     if (roomId) params.append("roomId", roomId);
@@ -31,7 +35,15 @@ export const FeedPage = () => {
     params.append("sort", sort);
     if (params.toString()) url += `?${params.toString()}`;
 
-    api.get(url).then(res => setPosts(res.data)).catch(console.error);
+    api.get(url)
+      .then(res => {
+        setPosts(res.data);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setIsLoading(false);
+      });
   }, [roomId, search, sort]);
 
   return (
@@ -50,7 +62,29 @@ export const FeedPage = () => {
         </Tabs>
       </div>
 
-      {posts.length === 0 ? (
+      {isLoading ? (
+        <div className="space-y-4">
+          {[...Array(5)].map((_, i) => (
+            <Card key={i} className="bg-white border-0 shadow-sm rounded-xl">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start mb-3">
+                  <Skeleton className="h-6 w-2/3" />
+                  <Skeleton className="h-6 w-24 rounded-md" />
+                </div>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-5/6 mb-4" />
+                <div className="flex justify-between items-center mt-4">
+                  <Skeleton className="h-4 w-32" />
+                  <div className="flex gap-4">
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : posts.length === 0 ? (
         <div className="text-center text-slate-500 py-16">
           <p className="text-xl">No posts here yet. Be the first!</p>
         </div>
