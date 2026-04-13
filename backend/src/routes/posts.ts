@@ -122,7 +122,7 @@ router.post("/:id/view", async (req, res) => {
 
 router.delete("/:id", authenticateToken, async (req: Request, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const userId = (req as AuthRequest).user!.userId;
 
     const post = await db.select().from(posts).where(eq(posts.id, id));
