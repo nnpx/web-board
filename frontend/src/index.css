@@ -2,12 +2,12 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --color-stone-50: #FDFBF7;
+  --color-page-bg: #f2fafa; 
 }
 
 @layer base {
   :root {
-    --background: var(--color-stone-50);
+    --background: var(--color-page-bg);
     --foreground: #0f172a; /* slate-900 */
   }
 

@@ -335,7 +335,7 @@ export const PostDetailPage = ({ user }: { user: UserType | null }) => {
               </div>
             </div>
           ) : (
-            <div className="bg-stone-50 border border-slate-200 rounded-xl p-8 text-center text-slate-500 font-medium">
+            <div className="bg-teal-50/60 border border-teal-100 rounded-xl p-8 text-center text-teal-800/80 font-medium">
               Please log in to reply.
             </div>
           )}

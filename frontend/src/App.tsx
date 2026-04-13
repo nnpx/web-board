@@ -193,7 +193,7 @@ function AppContent() {
   const isAuthPage = location.pathname === '/auth';
 
   return (
-    <div className="flex bg-stone-50 min-h-screen text-slate-800">
+    <div className="flex bg-[var(--background)] min-h-screen text-slate-800">
       {!isAuthPage && <Sidebar user={user} setUser={setUser} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />}
       <main className="flex-1 w-full max-w-full flex flex-col min-w-0">
         {!isAuthPage && <TopHeader setSidebarOpen={setSidebarOpen} user={user} />}
